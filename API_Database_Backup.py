@@ -10,6 +10,7 @@
 
 
 from pprint import pprint
+from unittest import result
 import sqlalchemy
 from secret import password
 import requests
@@ -53,6 +54,7 @@ def create_new_user_list():
         for dics in api_user_data:
             if dics.get("id") == item:
                 new_user_data.append(dics)
+    print(f"Here is a list of the new id's:\n {new_user_data}")
     return new_user_data
 
 # Put the new data into the 'users' table
@@ -99,13 +101,15 @@ def create_new_task_list():
         for dics in api_task_data:
             if dics.get("updatedAt") == item:
                 new_task_data.append(dics)
+    print(f"Here is a list of the new tasks:\n {new_task_data}")
     return new_task_data
 
 # Put the new data into the 'tasks' table
 def put_new_task_data_in_db():
-    tasks = sqlalchemy.Table('tasks', metadata, autoload=True, autoload_with=engine)
+    tasks = sqlalchemy.Table('Tasks', metadata, autoload=True, autoload_with=engine)
     query = sqlalchemy.insert(tasks)
     result_proxy = connection.execute(query, new_task_data)
+
 
 api_task_data = get_tasks_from_api()
 db_task_data = get_tasks_from_db()
