@@ -54,7 +54,7 @@ def create_new_user_list():
         for dics in api_user_data:
             if dics.get("id") == item:
                 new_user_data.append(dics)
-    print(f"Here is a list of the new id's:\n {new_user_data}")
+    pprint(f"Here is a list of the new id's:\n {new_user_data}")
     return new_user_data
 
 # Put the new data into the 'users' table
@@ -63,10 +63,10 @@ def put_new_user_data_in_db():
     query = sqlalchemy.insert(users)
     result_proxy = connection.execute(query, new_user_data)
 
-api_user_data = get_users_from_api()
-db_user_data = get_users_from_db()
-new_user_data= create_new_user_list()
-put_new_user_data_in_db()
+# api_user_data = get_users_from_api()
+# db_user_data = get_users_from_db()
+# new_user_data= create_new_user_list()
+# put_new_user_data_in_db()
 
 
 # Task Backup
@@ -90,13 +90,19 @@ def create_new_task_list():
     db_updatedAt_list = []
     for item in db_task_data:
         db_updatedAt_list.append(item['updatedAt'])
+    pprint(db_updatedAt_list)
+    
     # Compare task updatedAt in api to db and add new updatedAt to the list
     new_updatedAt_list = []
     for api_item in api_task_data:
+        print (api_item['updatedAt'])
         if api_item['updatedAt'] not in db_updatedAt_list:
-            new_updatedAt_list.append(api_item['updatedAt'])
+            new_updatedAt_list.append(api_item['updatedAt']) # Does not append????
+    print(new_updatedAt_list)
+
+
     # Create list of new task data
-    new_task_data = []
+    new_task_data = [] 
     for item in new_updatedAt_list:
         for dics in api_task_data:
             if dics.get("updatedAt") == item:
@@ -114,7 +120,8 @@ def put_new_task_data_in_db():
 api_task_data = get_tasks_from_api()
 db_task_data = get_tasks_from_db()
 new_task_data = create_new_task_list()
-put_new_task_data_in_db()
+print(new_task_data)
+# put_new_task_data_in_db()
 
 
 
