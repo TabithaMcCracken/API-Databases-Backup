@@ -43,18 +43,20 @@ def create_new_user_list():
     db_id_list = []
     for item in db_user_data:
         db_id_list.append(item[0])
+
     # Compare user ids in api to db and add new id's to the list
     new_user_id_list = []
     for api_item in api_user_data:
         if api_item['id'] not in db_id_list:
             new_user_id_list.append(api_item['id'])
+
     # Make new list of new api data by comparing the "id" to the list of new user ids
     new_user_data = []
     for item in new_user_id_list:
         for dics in api_user_data:
             if dics.get("id") == item:
                 new_user_data.append(dics)
-    pprint(f"Here is a list of the new id's:\n {new_user_data}")
+
     return new_user_data
 
 # Put the new data into the 'users' table
@@ -90,19 +92,16 @@ def create_new_task_list():
     # Create list of new tasks (using the "updatedAt" field)
     db_updatedAt_list = []
     for item in db_task_data:
-        # print(item['updatedAt'])
+
         db_updatedAt_list.append(item['updatedAt'])
-    # pprint(db_updatedAt_list)
     
     # Compare task updatedAt in api to db and add new updatedAt to the list
     new_updatedAt_list = []
     for api_item in api_task_data:
-        # print(api_item['updatedAt'])
-        if api_item['updatedAt'] not in db_updatedAt_list:
-            #  print(api_item['updatedAt'])
-            new_updatedAt_list.append(api_item['updatedAt'])
-    print(new_updatedAt_list)
 
+        if api_item['updatedAt'] not in db_updatedAt_list:
+
+            new_updatedAt_list.append(api_item['updatedAt'])
 
     # Create list of new task data
     new_task_data = [] 
@@ -110,7 +109,7 @@ def create_new_task_list():
         for dics in api_task_data:
             if dics.get("updatedAt") == item:
                 new_task_data.append(dics)
-    # print(f"Here is a list of the new tasks:\n {new_task_data}")
+
     return new_task_data
 
 # Put the new data into the 'tasks' table
@@ -123,10 +122,5 @@ def put_new_task_data_in_db():
 api_task_data = get_tasks_from_api()
 db_task_data = get_tasks_from_db()
 new_task_data = create_new_task_list()
-print(f"Here is the list of new tasks added to the database:\n{new_task_data}")
 put_new_task_data_in_db()
-
-
-
-
-
+print(f"Here is the list of new tasks added to the database:\n{new_task_data}")
