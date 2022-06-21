@@ -1,13 +1,13 @@
-# Backup user and task data from an API to my local database
+""" Backup user and task data from an API to a local database
 
-# We Need To:
+# Steps:
 # Connect with the local database
 # Get users data from the API
 # Get data already in the 'users' table of the database
 # Compare data, create new list with new data
 # Add new data to the database
 # Repeat for tasks
-
+"""
 
 from pprint import pprint
 from unittest import result
@@ -24,21 +24,46 @@ metadata = sqlalchemy.MetaData()
 
 # User Backup
 
-# Get user data from the API
-def get_users_from_api(): # Function to get user data from API
+def get_users_from_api():
+    """Gets user data from the API
+
+    Returns:
+        list: user data from the API
+    """
+
     user_url = "http://demo.codingnomads.co:8080/tasks_api/users" 
     user_request = requests.get(user_url) # Gets data
     return user_request.json()['data']
 
-# Get user data already in the 'users' table database
-def get_users_from_db():
+# Get user data already in the 'users' table in the database
+def get_users_from_db(metadata, engine, connection):
+    """Get user data already in the 'users' table in the database
+
+    Args:
+        metadata (int): desc
+        engine (typ): desc
+        connection (type): desc
+
+    Returns:
+        list: user data from 'users' table
+    """
+
     users_table = sqlalchemy.Table('users', metadata, autoload=True, autoload_with=engine)
     query = sqlalchemy.select([users_table])
     result_proxy = connection.execute(query)
     return result_proxy.fetchall()
 
-# Create new id list by comparing api and db id's 
-def create_new_user_list():
+def create_new_user_list(db_user_data, api_user_data):
+    """Creates new id list by comparing api and db id's
+
+    Args:
+        db_user_data (list): user data from db  
+        api_user_data (list): user data from api
+
+    Returns:
+        list: list of new id's
+    """
+
     # Make a list of user id's from the database
     db_id_list = []
     for item in db_user_data:
@@ -60,47 +85,77 @@ def create_new_user_list():
     return new_user_data
 
 # Put the new data into the 'users' table
-def put_new_user_data_in_db():
+def put_new_user_data_in_db(metadata, engine, connection):
+    """Puts the new data based on new id's into the 'users' table of the db
+
+    Args:
+        metadata (type): desc
+        engine (type): desc
+        connection (type): desc
+    """
+    
     users = sqlalchemy.Table('users', metadata, autoload=True, autoload_with=engine)
     query = sqlalchemy.insert(users)
     result_proxy = connection.execute(query, new_user_data)
 
-api_user_data = get_users_from_api()
-db_user_data = get_users_from_db()
-new_user_data = create_new_user_list()
-put_new_user_data_in_db()
-print(f"Here is the list of new user data to be added to the database:\n{new_user_data}")
+# api_user_data = get_users_from_api()
+# db_user_data = get_users_from_db(metadata, engine, connection)
+# new_user_data = create_new_user_list(db_user_data, api_user_data)
+# put_new_user_data_in_db()
+# print(f"Here is the list of new user data to be added to the database:\n{new_user_data}")
 
 
 # Task Backup
 
-# Get task data from the API
 def get_tasks_from_api():
+    """Gets tasks data from the api
+
+    Returns:
+        list: tasks data from the api
+    """
+
     task_url = "http://demo.codingnomads.co:8080/tasks_api/tasks"
     task_request = requests.get(task_url)
     return task_request.json()['data']
 
-# Get task data already in the 'tasks' table database
-def get_tasks_from_db():
+
+def get_tasks_from_db(metadata, engine, connection):
+    """Gets task data already in the 'tasks' table of the db
+
+    Args:
+        metadata (type): desc
+        engine (type): desc
+        connection (type): desc
+
+    Returns:
+        list: task data from the db
+    """
+
     tasks_table = sqlalchemy.Table('Tasks', metadata, autoload=True, autoload_with=engine)
     query = sqlalchemy.select([tasks_table])
     result_proxy = connection.execute(query)
     return result_proxy.fetchall()
 
-# Create new updatedAt list by comparing api and db udpatedAt
-def create_new_task_list():
+def create_new_task_list(db_task_data, api_task_data):
+    """Creates list of new tasks on the api by comparing api and db 'updatedAt' fields
+
+    Args:
+        db_task_data (list): task data from the db
+        api_task_data (list): task data from the api
+
+    Returns:
+        list: new tasks on the api
+    """
+
     # Create list of new tasks (using the "updatedAt" field)
     db_updatedAt_list = []
     for item in db_task_data:
-
         db_updatedAt_list.append(item['updatedAt'])
     
     # Compare task updatedAt in api to db and add new updatedAt to the list
     new_updatedAt_list = []
     for api_item in api_task_data:
-
         if api_item['updatedAt'] not in db_updatedAt_list:
-
             new_updatedAt_list.append(api_item['updatedAt'])
 
     # Create list of new task data
@@ -113,14 +168,21 @@ def create_new_task_list():
     return new_task_data
 
 # Put the new data into the 'tasks' table
-def put_new_task_data_in_db():
+def put_new_task_data_in_db(metadata, engine, connection):
+    """Puts the new tasks into the 'tasks' table in the db
+
+    Args:
+        metadata (type): desc
+        engine (type): desc
+        connection (type): desc
+    """
     tasks = sqlalchemy.Table('Tasks', metadata, autoload=True, autoload_with=engine)
     query = sqlalchemy.insert(tasks)
     result_proxy = connection.execute(query, new_task_data)
 
 
 api_task_data = get_tasks_from_api()
-db_task_data = get_tasks_from_db()
-new_task_data = create_new_task_list()
-put_new_task_data_in_db()
+db_task_data = get_tasks_from_db(metadata, engine, connection)
+new_task_data = create_new_task_list(db_task_data, api_task_data)
+put_new_task_data_in_db(metadata, engine, connection)
 print(f"Here is the list of new tasks added to the database:\n{new_task_data}")
