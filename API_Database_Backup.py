@@ -1,12 +1,12 @@
-""" Backup user and task data from an API to a local database
+""" Backup user and task data from the Coding Nomads API to a local database
 
 # Steps:
 # Connect with the local database
-# Get users data from the API
+# Get 'users' data from the API
 # Get data already in the 'users' table of the database
 # Compare data, create new list with new data
 # Add new data to the database
-# Repeat for tasks
+# Repeat for tasks API and database
 """
 
 from pprint import pprint
@@ -20,7 +20,7 @@ import pymysql
 # Connect to local database
 engine = sqlalchemy.create_engine(f'mysql+pymysql://root:{password}@localhost/taskDB')
 connection = engine.connect()
-metadata = sqlalchemy.MetaData()    
+metadata = sqlalchemy.MetaData()
 
 # User Backup
 
@@ -40,12 +40,12 @@ def get_users_from_db(metadata, engine, connection):
     """Get user data already in the 'users' table in the database
 
     Args:
-        metadata (int): desc
-        engine (typ): desc
-        connection (type): desc
+        metadata (class): keeps features of the database together
+        engine (class): manages connection to the database
+        connection (class): facilitates the connection to the database
 
     Returns:
-        list: user data from 'users' table
+        list: user data from 'users' table in the database
     """
 
     users_table = sqlalchemy.Table('users', metadata, autoload=True, autoload_with=engine)
@@ -61,7 +61,7 @@ def create_new_user_list(db_user_data, api_user_data):
         api_user_data (list): user data from api
 
     Returns:
-        list: list of new id's
+        list: list of new id's 
     """
 
     # Make a list of user id's from the database
@@ -85,24 +85,28 @@ def create_new_user_list(db_user_data, api_user_data):
     return new_user_data
 
 # Put the new data into the 'users' table
-def put_new_user_data_in_db(metadata, engine, connection):
+def put_new_user_data_in_db(metadata, engine, connection, new_user_data):
     """Puts the new data based on new id's into the 'users' table of the db
 
     Args:
-        metadata (type): desc
-        engine (type): desc
-        connection (type): desc
-    """
+        metadata (class): keeps features of the database together
+        engine (class): manages connection to the database
+        connection (class): facilitates the connection to the database
     
-    users = sqlalchemy.Table('users', metadata, autoload=True, autoload_with=engine)
-    query = sqlalchemy.insert(users)
-    result_proxy = connection.execute(query, new_user_data)
+    """
+    if new_user_data:
+        users = sqlalchemy.Table('users', metadata, autoload=True, autoload_with=engine)
+        query = sqlalchemy.insert(users)
+        result_proxy = connection.execute(query, new_user_data)
+        print(f"Here is the list of new user data to be added to the database:\n{new_user_data}")
 
-# api_user_data = get_users_from_api()
-# db_user_data = get_users_from_db(metadata, engine, connection)
-# new_user_data = create_new_user_list(db_user_data, api_user_data)
-# put_new_user_data_in_db()
-# print(f"Here is the list of new user data to be added to the database:\n{new_user_data}")
+    else:
+        print("The new user list is empty, no data was added to the database.")
+
+api_user_data = get_users_from_api()
+db_user_data = get_users_from_db(metadata, engine, connection)
+new_user_data = create_new_user_list(db_user_data, api_user_data)
+put_new_user_data_in_db(metadata, engine, connection, new_user_data)
 
 
 # Task Backup
@@ -123,9 +127,9 @@ def get_tasks_from_db(metadata, engine, connection):
     """Gets task data already in the 'tasks' table of the db
 
     Args:
-        metadata (type): desc
-        engine (type): desc
-        connection (type): desc
+        metadata (class): keeps features of the database together
+        engine (class): manages connection to the database
+        connection (class): facilitates the connection to the database
 
     Returns:
         list: task data from the db
@@ -167,22 +171,27 @@ def create_new_task_list(db_task_data, api_task_data):
 
     return new_task_data
 
-# Put the new data into the 'tasks' table
-def put_new_task_data_in_db(metadata, engine, connection):
+def put_new_task_data_in_db(metadata, engine, connection, new_task_data):
     """Puts the new tasks into the 'tasks' table in the db
 
     Args:
-        metadata (type): desc
-        engine (type): desc
-        connection (type): desc
+        metadata (class): keeps features of the database together
+        engine (class): manages connection to the database
+        connection (class): facilitates the connection to the database
+
     """
-    tasks = sqlalchemy.Table('Tasks', metadata, autoload=True, autoload_with=engine)
-    query = sqlalchemy.insert(tasks)
-    result_proxy = connection.execute(query, new_task_data)
+
+    if new_task_data:
+        tasks = sqlalchemy.Table('tasks', metadata, autoload=True, autoload_with=engine)
+        query = sqlalchemy.insert(tasks)
+        result_proxy = connection.execute(query, new_task_data)
+        print(f"Here is the list of new tasks added to the database:\n{new_task_data}")
+
+    else:
+        print("The new task list is empty, no data was added to the database.")
 
 
 api_task_data = get_tasks_from_api()
 db_task_data = get_tasks_from_db(metadata, engine, connection)
 new_task_data = create_new_task_list(db_task_data, api_task_data)
-put_new_task_data_in_db(metadata, engine, connection)
-print(f"Here is the list of new tasks added to the database:\n{new_task_data}")
+put_new_task_data_in_db(metadata, engine, connection, new_task_data)
